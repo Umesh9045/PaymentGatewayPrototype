@@ -1,0 +1,227 @@
+{% extends "layout.html" %}
+{% block title %}Payments{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center text-primary mb-4">Payment</h1>
+
+    <div class="row d-flex justify-content-center gap-4">
+        <!-- Left Side - Payment Details -->
+        <div class="col-md-5 p-4 border  rounded shadow bg-light">
+            <h3 class="text-secondary">Payment Details</h3>
+            <hr>
+            <p class="text-muted"><strong>Vendor Name:</strong> {{ vendor_name }}</p>
+            <p class="text-muted"><strong>Contact:</strong> {{ vendor_contact }}</p>
+            <p class="text-muted"><strong>Order ID:</strong> {{ order_id }}</p>
+            <p class="text-muted"><strong>Checkout Amount:</strong> ₹{{ checkout_amount }}</p>
+
+            {% if payment_handling_charges|add:0 != 0 %}
+            <p class="text-muted"><strong>Payment Handling Charges:</strong> ₹{{ payment_handling_charges }}</p>
+            <p class="text-muted"><strong>GST on Handling Charges:</strong> ₹{{ gst_on_payment_handling }}</p>
+            {% endif %}
+
+            <h4 class="text-success fw-bold">Final Payable Amount: ₹{{ final_amount }}</h4>
+            <hr>
+        </div>
+
+        <!-- Right Side - Payment Selection -->
+        <div class="col-md-5 p-4 border  rounded shadow bg-light">
+            {% if payment_status|add:0 == 2 %}
+            <p><strong>Payment Status:</strong> <span class="text-danger fw-bold">Failed</span></p>
+            <p><strong>Payment Method:</strong> <span class="text-success fw bold">{{ payment_options}}</p>
+            {% elif payment_status|add:0 == 1 %}
+            <p><strong>Payment Status:</strong> <span class="text-success fw-bold">Success</span></p>
+            <p><strong>Payment Method:</strong> <span class="text-success fw bold">{{ payment_options}}</p>
+            {% elif payment_status|add:0 == 3 %}
+            <h4 class="text-dark">Select a Payment Option:</h4>
+            <div class="card p-3 shadow-sm">
+                {% for key, value in payment_options.items %}
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="payment_option" id="{{ key }}" value="{{ key }}"
+                        onchange="togglePaymentFields()">
+                    <label class="form-check-label text-muted" for="{{ key }}">{{ value }}</label>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- UPI Input -->
+            <div id="upiField" class="mt-3 d-none">
+                <label for="upiId" class="fw-bold text-muted">Enter UPI ID:</label>
+                <input type="text" class="form-control" id="upiId" name="upiId" placeholder="example@upi">
+                <small class="text-danger d-none" id="upiError">Please enter a valid UPI ID</small>
+            </div>
+
+            <!-- Debit Card Input -->
+            <div id="db_cardField" class="mt-3 d-none">
+                <label for="dbcardNumber" class="fw-bold text-muted">Enter Card Number:</label>
+                <input type="text" class="form-control" id="dbcardNumber" name="dbcardNumber"
+                    placeholder="**** **** **** ****">
+                <small class="text-danger d-none" id="cardError">Please enter a valid Card Number</small>
+            </div>
+
+            <!-- Credit Card Input -->
+            <div id="cr_cardField" class="mt-3 d-none">
+                <label for="crCardNumber" class="fw-bold text-muted">Enter Credit Card Number:</label>
+                <input type="text" class="form-control" id="crCardNumber" name="crCardNumber" placeholder="**** **** **** ****">
+                <small class="text-danger d-none" id="crCardError">Please enter a valid Credit Card Number</small>
+            </div>
+
+            <!-- Internet Banking Selection -->
+            <div id="net_bankingField" class="mt-3 d-none">
+                <label for="bankSelect" class="fw-bold text-muted">Select Your Bank:</label>
+                <select class="form-control" id="bankSelect">
+                    <option value="0">-- Select Bank --</option>
+                    <option value="hdfc">HDFC Bank</option>
+                    <option value="sbi">State Bank of India</option>
+                    <option value="icici">ICICI Bank</option>
+                    <option value="axis">Axis Bank</option>
+                </select>
+                <small class="text-danger d-none" id="bankError">Please select a bank</small>
+            </div>
+
+
+            <div class="mt-4 text-center">
+                <button id='payment_btn' type="button" class="btn btn-primary btn-lg d-none"
+                    onClick="validatePaymentFields()">
+                    Proceed to Pay
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary" id="staticBackdropLabel">Payment Processing</h5>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fw-bold text-dark">Waiting for Payment...</p>
+            </div>
+            <div class="modal-footer d-flex justify-content-between">
+                <button type="button" class="btn btn-success" onClick='paymentSuccess()'>Success</button>
+                <button type="button" class="btn btn-danger" onClick='paymentFail()'>Fail</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'));
+    var payment_method_id = 0;
+    
+    function togglePaymentFields() {
+        let paymentOptions = document.getElementsByName('payment_option');
+    
+        // Hide all fields initially
+        document.getElementById("upiField").classList.add("d-none");
+        document.getElementById("db_cardField").classList.add("d-none");
+        document.getElementById("cr_cardField").classList.add("d-none");
+        document.getElementById("net_bankingField").classList.add("d-none");
+    
+        for (let option of paymentOptions) {
+            if (option.checked) {
+                document.getElementById("payment_btn").classList.remove("d-none");
+    
+                switch (option.value.toLowerCase()) {
+                    case "1": // UPI
+                        payment_method_id = '1';
+                        document.getElementById("upiField").classList.remove("d-none");
+                        document.getElementById('staticBackdropLabel').innerText = 'UPI Payment';
+                        break;
+                    case "2": // Credit Card
+                        payment_method_id = '2';
+                        document.getElementById("cr_cardField").classList.remove("d-none");
+                        document.getElementById('staticBackdropLabel').innerText = 'Credit Card Payment';
+                        break;
+                    case "3": // Debit Card
+                        payment_method_id = '3';
+                        document.getElementById("db_cardField").classList.remove("d-none");
+                        document.getElementById('staticBackdropLabel').innerText = 'Debit Card Payment';
+                        break;
+                    case "4": // Internet Banking
+                        payment_method_id = '4';
+                        document.getElementById("net_bankingField").classList.remove("d-none");
+                        document.getElementById('staticBackdropLabel').innerText = 'Internet Banking Payment';
+                        break;
+                }
+            }
+        }
+    }
+    
+    function validatePaymentFields() {
+        let isValid = false;
+    
+        // Validate UPI
+        if (!document.getElementById("upiField").classList.contains("d-none")) {
+            let upiId = document.getElementById('upiId').value.trim();
+            if (upiId === "") {
+                document.getElementById('upiError').classList.remove("d-none");
+            } else {
+                document.getElementById('upiError').classList.add("d-none");
+                isValid = true;
+            }
+        }
+    
+        // Validate Credit Card
+        if (!document.getElementById("cr_cardField").classList.contains("d-none")) {
+            let cardNumber = document.getElementById('crCardNumber').value.trim();
+            if (cardNumber === "" || cardNumber.length !== 16) {
+                document.getElementById('crCardError').classList.remove("d-none");
+            } else {
+                document.getElementById('crCardError').classList.add("d-none");
+                isValid = true;
+            }
+        }
+    
+        // Validate Debit Card
+        if (!document.getElementById("db_cardField").classList.contains("d-none")) {
+            let cardNumber = document.getElementById('dbcardNumber').value.trim();
+            if (cardNumber === "" || cardNumber.length !== 16) {
+                document.getElementById('cardError').classList.remove("d-none");
+            } else {
+                document.getElementById('cardError').classList.add("d-none");
+                isValid = true;
+            }
+        }
+    
+        // Validate Internet Banking
+        if (!document.getElementById("net_bankingField").classList.contains("d-none")) {
+            let bankSelection = document.getElementById('bankSelect').value;
+            if (bankSelection === "0") {
+                document.getElementById('bankError').classList.remove("d-none");
+            } else {
+                document.getElementById('bankError').classList.add("d-none");
+                isValid = true;
+            }
+        }
+    
+        if (isValid) {
+            myModal.show();
+        }
+    }
+    
+    function paymentSuccess() {
+        var transactionId = "{{ transaction_id|escapejs }}";
+        var updated_URL = `http://127.0.0.1:8000/payments/updatepayment/${transactionId}/${payment_method_id}/1/`;
+    
+        myModal.hide();
+        console.log('Payment Success: ' + updated_URL);
+        window.open(updated_URL);
+    }
+    
+    function paymentFail() {
+        var transactionId = "{{ transaction_id|escapejs }}";
+        var updated_URL = `http://127.0.0.1:8000/payments/updatepayment/${transactionId}/${payment_method_id}/2/`;
+    
+        myModal.hide();
+        console.log('Payment Failed: ' + updated_URL);
+        window.open(updated_URL);
+    }
+    
+</script>
+{% endblock content %}

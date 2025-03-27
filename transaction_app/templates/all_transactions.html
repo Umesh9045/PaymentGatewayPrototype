@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+{% block title %}All Transactions{% endblock  %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">All Transactions</h1>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle shadow-sm">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col" class="text-center">#</th>
+                    <th scope="col">Vendor</th>
+                    <th scope="col">Order Id</th>
+                    <th scope="col">Payment Status</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Payment Method</th>
+                    <th scope="col">Created Date</th>
+                    <th scope="col">Last Modifed Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <th scope="row" class="text-center">{{ transaction.id }}</th>
+                    <td>{{ transaction.vendor_id }}</td>
+                    <td>{{ transaction.order_id }}</td>
+                    <td>{{ transaction.payment_status }}</td>
+                    <td>{{ transaction.final_amount }}</td>
+                    <td>{{ transaction.payment_method }}</td>
+                    <td>{{ transaction.created_date }}</td>
+                    <td>{{ transaction.last_modified_date }}</td>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}
+

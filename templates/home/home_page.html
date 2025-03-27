@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}Payment Gateway{% endblock  %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Payment Gateway Links</h2>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle shadow-sm">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">URL</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Manage Vendor</td>
+                    <td><a href="http://127.0.0.1:8000/vendor/manage/" target="_blank" class="text-decoration-none">http://127.0.0.1:8000/vendor/manage/</a></td>
+                </tr>
+                <tr>
+                    <td>Admin Panel</td>
+                    <td><a href="http://127.0.0.1:8000/admin/" target="_blank" class="text-decoration-none">http://127.0.0.1:8000/admin/</a></td>
+                </tr>
+                <tr>
+                    <td>Make Payment</td>
+                    <td><a href="http://127.0.0.1:8000/payments/makepayment/1/8/100/" target="_blank" class="text-decoration-none">http://127.0.0.1:8000/payments/makepayment/1/8/100/</a></td>
+                </tr>
+                <tr>
+                    <td>Update Payment</td>
+                    <td><a href="http://127.0.0.1:8000/payments/updatepayment/7/upi/2/" target="_blank" class="text-decoration-none">http://127.0.0.1:8000/payments/updatepayment/7/upi/2/</a></td>
+                </tr>
+                <tr>
+                    <td>All Transactions</td>
+                    <td><a href="http://127.0.0.1:8000/transaction/all/" target='_blank' class='text-decoration-none'>http://127.0.0.1:8000/transaction/all/</a></td>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock content %}
+

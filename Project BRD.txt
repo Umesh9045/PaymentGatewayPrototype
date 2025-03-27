@@ -1,0 +1,115 @@
+
+# Entities
+1. Tech Service Provider - TSP
+2. Vendor (Clients of TSP: Kirana shops, Online Commerce, etc.)
+3. Vendor's Customer
+
+---
+
+# Flow
+1. TSP has an admin panel to manage and onboard vendors.
+2. TSP fills in all details and creates a new vendor.
+3. Vendor integrates TSP into their platform (POS/Online Commerce Website).
+4. When a user selects the online payment method, the vendor's platform sends:
+   - order_id
+   - cart_amount
+   - vendor_id (provided by TSP)
+5. TSP's payment page displays:
+   - Vendor Name  
+   - Vendor Contact Number  
+   - Checkout Amount  
+   - Available Payment Methods (UPI, Credit Card, etc.)
+6. The user (vendor’s customer) selects a payment method and completes the payment.
+7. After payment, TSP's payment page sends the following to the vendor’s checkout page:
+   - Final_amount
+   - payment_status
+   - order_id
+8. Vendor's checkout page verifies these details:
+   - If details match, check payment_status.
+9. If payment_status = success, mark the order as placed; otherwise, mark it as failed.
+
+---
+
+# Notes
+1. TSP's Payment Page - Transaction Table 
+   (Stores transaction details, now without foreign keys, but with vendor data copied from Vendor Table)  
+   - transaction_id
+   - payment_status
+   - payment_method (UPI, Credit Card, Debit Card, Internet Banking)
+   - final_amount
+   - checkout_amount
+   - vender_id
+   - Today's datetime
+   - Last Modified DateTime
+
+2. Fianl_Amount Calculation on TSP’s Payment Page  
+   If the customer bears the fee: 
+   	Final_Amount = Checkout_Amount + (2% of Checkout_Amount) + (18% GST on 2% Fee)
+   Else:
+	Final_Amount = Checkout_Amount
+
+---
+
+# Vendor Data 
+(TSP can onboard vendors on their platform, and all details will be copied into the transaction table when a payment is made.)  
+1. Vendor Type  
+2. Vendor Name  
+3. Vendor Contact Number  
+4. Vendor Website  
+5. Vendor Address  
+6. Fee Bearer (Radio Btn):  
+   - 0 = Vendor Pays  
+   - 1 = Customer Pays  
+7. Payment Methods (Checkbox):  
+   - UPI  
+   - Credit Cards  
+   - Debit Cards  
+   - Internet Banking  
+8. Bank Name  
+9. IFSC Code  
+10. Account Number  
+11. Onboarding Date  
+12. Unique Vendor-ID (Generated on submission)
+
+---
+
+# Checkout Request Data  
+(Vendor’s customer redirects to TSP’s checkout page)  
+1. Vendor_ID  
+2. Cart_Amount  
+3. Order_ID  
+
+(Based on this, all details will be shown on the payment page.)
+
+---
+
+# On Payment Gateway Page hits  
+1. Payment_ID   
+2. Final_Amount 
+3. Cart_Amount 
+3. Payment_Method  
+4. Payment_Status (Success, Failed, Pending)  
+5. Order_ID  
+6. vendor_id
+7. Today's Date
+8. Last Modified Date
+
+---
+
+# Payment Gateway Algorithm:
+1. URL => site/payments/vender_id/order_id/cart_amount hits
+2. Transaction = get transaction details from db using vender_id, order_id, today's date.
+3. If Transaction not_found / status=pending: => 
+   - Insert into Transaction_Table if not_found
+   - Template (html page) with final_amount and payment_options will displays.
+	3.1 If 'UPI' selected => 
+	    - Enter the upi-id => Proceed to Pay => 
+	    - Popup with success and Fail Btn will displays (As its prototype). => On btn click...
+		3.2 URL => site/payments/payment_Id/updated_status hits..
+		3.3 Update Transaction Data for given payment_Id..
+		3.4 Redirects to STEP 1
+	3.2 Same for all other payment methods
+4. If Transaction.status = success / Fail => That status will be shown...
+
+
+#import pdb: debugging

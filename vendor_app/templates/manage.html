@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+{% block title %}Vendor List{% endblock  %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Manage Vendors</h1>
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle shadow-sm">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col" class="text-center">#</th>
+                    <th scope="col">Vendor Name</th>
+                    <th scope="col">Business Type</th>
+                    <th scope="col">Payment Methods</th>
+                    <th scope="col">Fee Bearer</th>
+                    <th scope="col">Vendor Website</th>
+                    <th scope="col">Onboarding Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vendor in vendors %}
+                <tr>
+                    <th scope="row" class="text-center">{{ vendor.id }}</th>
+                    <td>{{ vendor.vendor_name }}</td>
+                    <td>{{ vendor.vendor_type }} - {{ vendor.get_vendor_type_display }}</td>
+                    <td>{{ vendor.payment_methods }}</td>
+                    <td>
+                        {% if vendor.fee_bearer|add:0 == 0 %}
+                            Vendor Pays
+                        {% elif vendor.fee_bearer|add:0 == 1 %}
+                            Customer Pays
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if vendor.vendor_website == '' or vendor.vendor_website == NULL %}
+                            NA
+                        {% else %}
+                            <a href="{{ vendor.vendor_website }}" target='_blank' class="text-decoration-none">{{ vendor.vendor_website }}</a>
+                        {% endif %}
+                    </td>
+                    <td>{{ vendor.onboarding_date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock content %}
+
