@@ -5,7 +5,10 @@ from vendor_app.models import Vendor
 class VendorModelTest(TestCase):
 
     def setUp(self):
-        """Set up a valid Vendor instance for testing"""
+        """
+        # Test case 1 - Vendor Creation with Valid Data
+        # Test case 1 - Run (success = when vendor is created successfully, fail = when vendor creation fails)
+        """
         self.valid_vendor = Vendor.objects.create(
             vendor_name="Valid Vendor",
             vendor_type="OC",
@@ -18,12 +21,18 @@ class VendorModelTest(TestCase):
         )
 
     def test_valid_vendor_creation(self):
-        """Test that a vendor with valid data is successfully created"""
+        """
+        # Test case 2 - Vendor Name and Contact Validation
+        # Test case 2 - Run (success = when vendor name and contact match expected values, fail = when they do not match)
+        """
         self.assertEqual(self.valid_vendor.vendor_name, "Valid Vendor")
         self.assertEqual(self.valid_vendor.vendor_contact, "9876543210")
 
     def test_invalid_contact_number(self):
-        """Test validation for an invalid vendor contact number"""
+        """
+        # Test case 3 - Vendor Contact Number Validation
+        # Test case 3 - Run (success = when validation error is raised for invalid contact, fail = when validation passes unexpectedly)
+        """
         vendor = Vendor(
             vendor_name="Test Vendor",
             vendor_type="OC",
