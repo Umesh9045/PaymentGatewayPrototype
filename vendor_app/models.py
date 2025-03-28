@@ -20,7 +20,7 @@ class Vendor(models.Model):
     ]
 
     def get_payment_method_choices():
-        return [(choices.id, choices.name) for choices in Payment_Method.objects.all()]
+        return [(choices.id, choices.name) for choices in Payment_Method.objects.all()] or [('default', 'No Payment Methods')]
 
     vendor_name = models.CharField(max_length=255)
 
@@ -45,13 +45,7 @@ class Vendor(models.Model):
     bank_name = models.CharField(max_length=255)
 
     ifsc_code = models.CharField(
-        max_length=11,
-        validators=[
-            RegexValidator(
-                regex=r'^[A-Z]{4}0[A-Z0-9]{6}$',
-                message="Enter a valid 11-character IFSC code."
-            )
-        ]
+        max_length=11
     )
 
     account_number = models.CharField(

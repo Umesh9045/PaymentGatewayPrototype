@@ -1,27 +1,43 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
+from vendor_app.models import Vendor
 
-# Create your tests here.
-import pytest
-from django.urls import reverse
-from django.test import Client
-from .models import Vendor
+class VendorModelTest(TestCase):
 
-@pytest.mark.django_db  # Marks test to use the database
-def test_vender_manage_view():
-    client = Client()
+    def setUp(self):
+        """Set up a valid Vendor instance for testing"""
+        self.valid_vendor = Vendor.objects.create(
+            vendor_name="Valid Vendor",
+            vendor_type="OC",
+            vendor_contact="9876543210",  # Valid contact number
+            vendor_address="123 Main Street",
+            bank_name="State Bank",
+            ifsc_code="SBIN0001234",
+            account_number="123456789012",
+            fee_bearer="0",
+        )
 
-    # Create test vendors
-    vendor1 = Vendor.objects.create(name="Vendor A")
-    vendor2 = Vendor.objects.create(name="Vendor B")
+    def test_valid_vendor_creation(self):
+        """Test that a vendor with valid data is successfully created"""
+        self.assertEqual(self.valid_vendor.vendor_name, "Valid Vendor")
+        self.assertEqual(self.valid_vendor.vendor_contact, "9876543210")
 
-    # Send request to view
-    response = client.get(reverse('vender_manage'))  # Ensure URL name is correct
+    def test_invalid_contact_number(self):
+        """Test validation for an invalid vendor contact number"""
+        vendor = Vendor(
+            vendor_name="Test Vendor",
+            vendor_type="OC",
+            vendor_contact="1234",  # Invalid: Should be 10 digits
+            vendor_address="Test Address",
+            bank_name="Test Bank",
+            ifsc_code="TEST1234567",
+            account_number="123456789",
+            fee_bearer="1",
+        )
 
-    # Assertions
-    assert response.status_code == 200  # Check if the view returns 200 OK
-    assert 'vendors' in response.context  # Ensure 'vendors' is passed to the template
-    assert list(response.context['vendors']) == [vendor1, vendor2]  # Verify vendors list
+        # Call full_clean() to trigger field validation
+        with self.assertRaises(ValidationError) as context:
+            vendor.full_clean()
 
-    # Check if the correct template is used
-    templates_used = [template.name for template in response.templates]
-    assert 'manage.html' in templates_used
+        # Ensure correct validation error message
+        self.assertIn("Enter a valid 10-digit mobile number.", str(context.exception))
