@@ -38,7 +38,7 @@ def make_payment(request, vendor_id, order_id, checkout_amount):
         # pdb.set_trace()
 
         if transaction.payment_status == '1' or transaction.payment_status == '2':
-            return HttpResponse("Payment Denied - Duplicate Request", status=404)
+            return HttpResponse("Payment Denied - Duplicate Request", status=400)
     
         # Fetch payment method IDs from vendor
         payment_ids = vendor.payment_methods  # Assuming MultiSelectField stores IDs as a list
@@ -72,10 +72,10 @@ def payment_status_update(request, transaction_id, payment_method_id, payment_st
         
         #if payment status = fail or success
         if transaction.payment_status == '1' or transaction.payment_status == '2':
-            return HttpResponse("Payment Denied - Duplicate Request", status=404)
+            return HttpResponse("Payment Denied - Duplicate Request", status=400)
 
         if payment_status == 3:
-            return HttpResponse("Payment Denied - Bad Request", status=404)
+            return HttpResponse("Payment Denied - Invalid Payment Status", status=404)
         if payment_status == 2:
             transaction.payment_status = '2'
         if payment_status == 1:
@@ -107,6 +107,6 @@ def payment_status_update(request, transaction_id, payment_method_id, payment_st
         return render(request, 'make_payment.html', context)
 
     except Transaction.DoesNotExist:
-        return HttpResponse("Bad Request", status=404)
+        return HttpResponse("Payment Denied - Transaction not found", status=404)
 
 

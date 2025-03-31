@@ -74,7 +74,7 @@ class PaymentInterfaceViewTest(TestCase):
             payment_status='1'  # Simulating a completed transaction
         )
         response = self.client.get(reverse("make_payment", args=[self.vendor.id, self.order_id, str(self.checkout_amount)]))
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content.decode(), "Payment Denied - Duplicate Request")
 
     # Test case 5: Transaction creation and fetching
