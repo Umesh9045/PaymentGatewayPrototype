@@ -14,6 +14,7 @@ def make_payment(request, vendor_id, order_id, checkout_amount):
 
         payment_handling_charges = 0
         gst_on_payment_handling = 0
+        checkout_amount = float(checkout_amount)
         final_amount = checkout_amount
 
         if int(vendor.fee_bearer) == 1:
